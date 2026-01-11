@@ -4,7 +4,7 @@ import { ThrottlerGuard } from '@nestjs/throttler'
 import { UseGuards } from '@nestjs/common'
 import { SendEmailDto } from '@/email/dto/send-email.dto'
 
-@Controller('email')
+@Controller({ path: 'email', version: '1' })
 @UseGuards(ThrottlerGuard)
 export class EmailController {
   private readonly logger = new Logger(EmailController.name)

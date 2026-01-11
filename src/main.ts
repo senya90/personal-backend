@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
-import { ValidationPipe } from '@nestjs/common'
+import { RequestMethod, ValidationPipe, VersioningType } from '@nestjs/common'
 import helmet from 'helmet'
 
 async function bootstrap() {
@@ -8,10 +8,18 @@ async function bootstrap() {
   const frontend = process.env.CORS_FRONTEND || 'http://localhost:3000'
   const app = await NestFactory.create(AppModule)
 
+  app.setGlobalPrefix('api', { exclude: [{ path: 'health', method: RequestMethod.GET }] })
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+    prefix: 'v'
+  })
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      forbidNonWhitelisted: true
+      forbidNonWhitelisted: true,
+      transform: true
     })
   )
 

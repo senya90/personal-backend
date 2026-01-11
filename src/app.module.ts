@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common'
-import { AppController } from './app.controller'
-import { AppService } from './app.service'
 import { EmailModule } from './email/email.module'
 import { ThrottlerModule } from '@nestjs/throttler'
 import { ConfigModule } from '@nestjs/config'
+import { HealthController } from '@/health.controller'
 
 @Module({
   imports: [
@@ -20,7 +19,7 @@ import { ConfigModule } from '@nestjs/config'
       ]
     })
   ],
-  controllers: [AppController],
-  providers: [AppService]
+  controllers: [HealthController],
+  providers: []
 })
 export class AppModule {}
