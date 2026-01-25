@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common'
 import { EmailController } from './email.controller'
 import { EmailService } from './email.service'
-import { FileReaderService } from '@/file-reader/file-reader.service'
+import { FileModule } from '@/file/file.module'
+import { CaptchaModule } from '@/captcha/captcha.module'
 
 @Module({
+  imports: [FileModule, CaptchaModule],
   controllers: [EmailController],
-  providers: [EmailService, FileReaderService]
+  providers: [EmailService]
 })
 export class EmailModule {}

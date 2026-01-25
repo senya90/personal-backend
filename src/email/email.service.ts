@@ -1,19 +1,34 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common'
+import {
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  Logger
+} from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import * as nodemailer from 'nodemailer'
 import { SendEmailDto } from './dto/send-email.dto'
-import { FileReaderService } from '@/file-reader/file-reader.service'
+import { FileReaderService } from '@/file/file-reader.service'
+import { CaptchaService } from '@/captcha/captcha.service'
+import { ErrorUtils } from '@/common/utils/error.utils'
 
 @Injectable()
 export class EmailService {
-  private readonly logger = new Logger(FileReaderService.name)
+  private readonly logger = new Logger(EmailService.name)
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly fileReader: FileReaderService
+    private readonly fileReader: FileReaderService,
+    private readonly captchaService: CaptchaService
   ) {}
 
   async sendEmail(dto: SendEmailDto): Promise<void> {
+    const isCaptchaValid = await this.captchaService.verifyToken(dto.token)
+
+    if (!isCaptchaValid) {
+      this.logger.warn(`Captcha verification failed for email: ${dto.email}`)
+      throw new ForbiddenException('Captcha verification failed. Please try again.')
+    }
+
     try {
       const { host, port, secure, user, password, targetEmail } = await this.getSmtpCredential()
 
@@ -33,16 +48,16 @@ export class EmailService {
         subject: dto.theme,
         text: `От: ${dto.email}\n\nТема: ${dto.theme}\n\n${dto.description}`
       })
+
+      this.logger.log(`Email successfully sent from ${dto.email}`)
     } catch (error) {
-      if (error instanceof Error) {
-        throw new InternalServerErrorException('Send email error: ' + error.message)
-      }
+      const message = ErrorUtils.getErrorMessage(error, 'Unknown error during email sending')
+      this.logger.error(
+        `Failed to send email from ${dto.email}: ${message}`,
+        error instanceof Error ? error.stack : undefined
+      )
 
-      if (typeof error === 'string') {
-        throw new InternalServerErrorException('Send email errorl: ' + error)
-      }
-
-      throw new InternalServerErrorException('Send email error')
+      throw new InternalServerErrorException('Unable to send your message. Please try again later.')
     }
   }
 

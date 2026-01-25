@@ -14,4 +14,8 @@ export class SendEmailDto {
   @IsString({ message: 'Content must be a string' })
   @MaxLength(5000, { message: 'Content must not exceed 5000 characters' })
   description: string
+
+  @IsNotEmpty({ message: 'The "token" field is required' })
+  @IsString({ message: 'Captcha token must be a string' })
+  token: string
 }
