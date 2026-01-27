@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
 import { RequestMethod, ValidationPipe, VersioningType } from '@nestjs/common'
 import helmet from 'helmet'
+import { SanitizePipe } from '@/common/pipes/sanitize.pipe'
 
 async function bootstrap() {
   const port = process.env.PORT || 4000
@@ -16,6 +17,7 @@ async function bootstrap() {
   })
 
   app.useGlobalPipes(
+    new SanitizePipe(),
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
